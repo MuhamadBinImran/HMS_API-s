@@ -84,5 +84,29 @@ Route::middleware(['auth:api'])->group(function () {
     Route::middleware(['role:patient'])->group(function () {
         Route::get('/patient/profile', [PatientProfileController::class, 'show']);
         Route::put('/patient/profile/update', [PatientProfileController::class, 'update']);
+        Route::get('/patient/medical-history', [AppointmentController::class, 'medicalHistory']);
+        Route::get('/patient/bills', [BillController::class, 'patientBills']);
+        Route::get('/patient/appointments/{appointment}/prescription', [\App\Http\Controllers\PrescriptionController::class, 'showByAppointment']);
+        Route::get('/patient/appointments/{appointment}/bill', [\App\Http\Controllers\Api\BillController::class, 'showByAppointment']);
+
+
     });
+
+    // Doctor-only routes: Manage prescriptions
+    Route::middleware(['role:doctor'])->group(function () {
+        Route::post('/prescriptions', [\App\Http\Controllers\PrescriptionController::class, 'store']);
+        Route::get('/doctor/appointments', [AppointmentController::class, 'doctorAppointments']);
+        Route::get('/doctor/prescriptions', [\App\Http\Controllers\PrescriptionController::class, 'doctorPrescriptions']);
+        Route::get('/doctor/profile', [DoctorController::class, 'profile']);
+        Route::put('/doctor/profile/update', [DoctorController::class, 'updateProfile']);
+
+        // Doctor-only appointment approval/rejection
+        Route::put('/doctor/appointments/{id}/approve', [AppointmentController::class, 'doctorApprove']);
+        Route::put('/doctor/appointments/{id}/reject', [AppointmentController::class, 'doctorReject']);
+
+
+    });
+
+
+
 });

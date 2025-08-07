@@ -163,4 +163,113 @@ class AppointmentController extends Controller
             'message' => 'Appointment deleted successfully.',
         ]);
     }
+
+    public function medicalHistory(): JsonResponse
+    {
+        $user = auth()->user();
+
+        if (!$user->hasRole('patient')) {
+            return response()->json(['message' => 'Unauthorized'], 403);
+        }
+
+        $patientProfile = $user->patientProfile;
+
+        if (!$patientProfile) {
+            return response()->json(['message' => 'No patient profile found.'], 404);
+        }
+
+        $appointments = Appointment::with('doctor')
+            ->where('patient_id', $patientProfile->id)
+            ->where('status', 'approved')
+            ->orderBy('appointment_time', 'desc')
+            ->get();
+
+        return response()->json([
+            'success' => true,
+            'data' => $appointments
+        ]);
+    }
+
+    public function doctorAppointments()
+    {
+        $user = auth()->user();
+
+        // Get the doctor's profile
+        $doctorProfile = $user->doctorProfile;
+
+        if (!$doctorProfile) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Doctor profile not found.'
+            ], 404);
+        }
+
+        $appointments = \App\Models\Appointment::with(['patient.user'])
+            ->where('doctor_id', $doctorProfile->id)
+            ->orderBy('appointment_time', 'asc')
+            ->get();
+
+        return response()->json([
+            'success' => true,
+            'data' => $appointments
+        ]);
+    }
+
+
+    public function doctorApprove($id): JsonResponse
+    {
+        $user = auth()->user();
+        $doctorProfile = $user->doctorProfile;
+
+        if (!$doctorProfile) {
+            return response()->json(['success' => false, 'message' => 'Doctor profile not found.'], 404);
+        }
+
+        $appointment = Appointment::where('id', $id)
+            ->where('doctor_id', $doctorProfile->id)
+            ->first();
+
+        if (!$appointment) {
+            return response()->json(['success' => false, 'message' => 'Appointment not found or unauthorized.'], 403);
+        }
+
+        $this->appointmentService->approve($appointment);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Appointment approved successfully by doctor.',
+            'data' => new AppointmentResource($appointment),
+        ]);
+    }
+
+
+    public function doctorReject($id): JsonResponse
+    {
+        $user = auth()->user();
+        $doctorProfile = $user->doctorProfile;
+
+        if (!$doctorProfile) {
+            return response()->json(['success' => false, 'message' => 'Doctor profile not found.'], 404);
+        }
+
+        $appointment = Appointment::where('id', $id)
+            ->where('doctor_id', $doctorProfile->id)
+            ->first();
+
+        if (!$appointment) {
+            return response()->json(['success' => false, 'message' => 'Appointment not found or unauthorized.'], 403);
+        }
+
+        $this->appointmentService->reject($appointment);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Appointment rejected successfully by doctor.',
+            'data' => new AppointmentResource($appointment),
+        ]);
+    }
+
+
+
+
 }

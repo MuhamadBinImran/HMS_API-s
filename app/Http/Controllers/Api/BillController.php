@@ -96,4 +96,72 @@ class BillController extends Controller
             'message' => 'Bill deleted successfully.'
         ]);
     }
+
+    public function patientBills()
+    {
+        $user = auth()->user();
+
+        // Make sure patient profile exists
+        $patientProfile = $user->patientProfile;
+
+        if (!$patientProfile) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Patient profile not found.'
+            ], 404);
+        }
+
+        // Fetch only this patient's bills that are marked as paid
+        $bills = Bill::with(['appointment'])
+            ->where('patient_id', $patientProfile->id)
+            ->where('status', 'paid') // or 'approved' depending on your logic
+            ->latest()
+            ->get();
+
+        return response()->json([
+            'success' => true,
+            'data' => $bills
+        ]);
+    }
+    public function showByAppointment($appointmentId)
+    {
+        $user = auth()->user();
+        $patientProfile = $user->patientProfile;
+
+        if (!$patientProfile) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Patient profile not found.'
+            ], 404);
+        }
+
+        // Confirm this appointment belongs to this patient
+        $appointment = \App\Models\Appointment::where('id', $appointmentId)
+            ->where('patient_id', $patientProfile->id)
+            ->first();
+
+        if (!$appointment) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Unauthorized or appointment not found.'
+            ], 403);
+        }
+
+        // Get the related bill
+        $bill = \App\Models\Bill::where('appointment_id', $appointmentId)->first();
+
+        if (!$bill) {
+            return response()->json([
+                'success' => false,
+                'message' => 'No bill found for this appointment.'
+            ], 404);
+        }
+
+        return response()->json([
+            'success' => true,
+            'data' => $bill
+        ]);
+    }
+
+
 }

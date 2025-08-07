@@ -12,6 +12,7 @@ use App\DTOs\DoctorDTO;
 use App\DTOs\UpdateDoctorDTO;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
+use Illuminate\Http\Request;
 
 class DoctorController extends Controller
 {
@@ -78,4 +79,56 @@ class DoctorController extends Controller
             'message' => 'Doctor deleted successfully.',
         ]);
     }
+
+    public function profile()
+    {
+        $user = auth()->user();
+        $doctorProfile = $user->doctorProfile;
+
+        if (!$doctorProfile) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Doctor profile not found.'
+            ], 404);
+        }
+
+        return response()->json([
+            'success' => true,
+            'data' => [
+                'name'           => $user->name,
+                'email'          => $user->email,
+                'specialization' => $doctorProfile->specialization,
+                'phone'          => $doctorProfile->phone,
+                'availability'   => $doctorProfile->availability_schedule,
+            ]
+        ]);
+    }
+    public function updateProfile(Request $request)
+    {
+        $user = auth()->user();
+        $doctorProfile = $user->doctorProfile;
+
+        if (!$doctorProfile) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Doctor profile not found.'
+            ], 404);
+        }
+
+        $validated = $request->validate([
+            'phone'               => 'sometimes|required|string|max:20',
+            'specialization'      => 'sometimes|required|string|max:100'
+        ]);
+
+        // Update only provided fields
+        $doctorProfile->update($validated);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Doctor profile updated successfully.',
+            'data'    => $doctorProfile
+        ]);
+    }
+
+
 }
