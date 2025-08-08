@@ -1,7 +1,7 @@
 <?php
 
 namespace App\Http\Controllers\Api;
-
+use App\Models\User;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreAppointmentRequest;
 use App\Http\Resources\AppointmentResource;
@@ -11,7 +11,10 @@ use App\DTOs\AppointmentDTO;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Log;
 use App\Jobs\SendAppointmentEmailJob;
-
+use App\Filters\AppointmentFilter;
+use Illuminate\Http\Request;
+use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Pipeline\Pipeline;
 class AppointmentController extends Controller
 {
     protected AppointmentService $appointmentService;
@@ -62,7 +65,6 @@ class AppointmentController extends Controller
             'data' => AppointmentResource::collection($appointments),
         ]);
     }
-
     public function store(StoreAppointmentRequest $request): JsonResponse
     {
         $user = auth()->user();
@@ -268,8 +270,5 @@ class AppointmentController extends Controller
             'data' => new AppointmentResource($appointment),
         ]);
     }
-
-
-
 
 }

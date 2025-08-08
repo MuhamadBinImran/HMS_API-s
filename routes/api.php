@@ -24,10 +24,12 @@ Route::middleware(['auth:api'])->group(function () {
             'data' => auth()->user()
         ]);
     });
+    Route::post('/logout', [AuthController::class, 'logout']);
 
     // Admin-only routes
     Route::middleware(['role:admin'])->group(function () {
 
+        Route::get('/patients/filter', [PatientController::class, 'filteredIndex']);
         // Patients CRUD
         Route::prefix('patients')->group(function () {
             Route::get('/', [PatientController::class, 'index']);
@@ -36,7 +38,7 @@ Route::middleware(['auth:api'])->group(function () {
             Route::put('/{id}', [PatientController::class, 'update']);
             Route::delete('/{id}', [PatientController::class, 'destroy']);
         });
-
+        Route::get('doctors/filter', [DoctorController::class, 'filteredIndex']);
         // Doctors CRUD
         Route::prefix('doctors')->group(function () {
             Route::get('/', [DoctorController::class, 'index']);
@@ -107,6 +109,9 @@ Route::middleware(['auth:api'])->group(function () {
 
     });
 
+    Route::middleware(['auth:api', 'role:admin'])->group(function () {
+        // Existing patient CRUD routes...
 
-
+        // New filtered route
+    });
 });

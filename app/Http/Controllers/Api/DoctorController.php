@@ -13,7 +13,7 @@ use App\DTOs\UpdateDoctorDTO;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Http\Request;
-
+use App\Filters\DoctorFilter;
 class DoctorController extends Controller
 {
     protected DoctorService $doctorService;
@@ -130,5 +130,16 @@ class DoctorController extends Controller
         ]);
     }
 
+    public function filteredIndex(Request $request)
+    {
+        $filter = new DoctorFilter($request);
+        $query = Doctor::query();
+
+        $query = $filter->apply($query);
+
+        $doctors = $query->paginate(5);
+
+        return DoctorResource::collection($doctors);
+    }
 
 }

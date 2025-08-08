@@ -16,7 +16,9 @@ use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Symfony\Component\HttpFoundation\Response;
-
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Http\Request;
+use Illuminate\Pipeline\Pipeline;
 class PatientController extends Controller
 {
     protected PatientService $patientService;
@@ -77,4 +79,34 @@ class PatientController extends Controller
             'message' => 'Patient deleted successfully.'
         ], Response::HTTP_OK);
     }
+
+
+    public function filteredIndex(Request $request)
+    {
+        $query = Patient::query();
+
+        if ($request->filled('name')) {
+            $name = $request->input('name');
+            $query->whereHas('user', function($q) use ($name) {
+                $q->where('name', 'like', "%{$name}%");
+            });
+        }
+
+        if ($request->filled('email')) {
+            $email = $request->input('email');
+            $query->whereHas('user', function($q) use ($email) {
+                $q->where('email', 'like', "%{$email}%");
+            });
+        }
+
+        if ($request->filled('phone')) {
+            $phone = $request->input('phone');
+            $query->where('phone', 'like', "%{$phone}%");
+        }
+
+        $patients = $query->paginate(5);
+
+        return PatientResource::collection($patients);
+    }
+
 }
