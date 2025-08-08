@@ -104,9 +104,11 @@ php artisan migrate --seed
 
 ## Authentication
 
-* Login endpoint: `POST /api/login`
-* Logout endpoint: `POST /api/logout`
-* Use Bearer token in `Authorization` header for protected routes
+* **Login:** `POST /api/login`
+* **Logout:** `POST /api/logout`
+* **Get Current User:** `GET /api/me`
+
+Use Bearer token in `Authorization` header for protected routes.
 
 ---
 
@@ -183,11 +185,15 @@ php artisan migrate --seed
 
 ## Filtering & Pagination
 
-* Filter Doctors by `name`, `email`, `specialization`, `phone` via `/api/doctors/filter`
-* Filter Patients by `name`, `email`, `phone` via `/api/patients/filter`
-* Pagination enabled with 5 items per page by default
+Filter support on `/api/patients/filter` and `/api/doctors/filter`.
+Use query parameters like:
 
-Example:
+* **Doctors:** `name`, `email`, `specialization`, `phone`
+* **Patients:** `name`, `email`, `phone`
+
+Pagination enabled by default with 5 items per page.
+
+**Example:**
 
 ```
 GET /api/doctors/filter?specialization=cardiology&name=John&page=2
@@ -205,7 +211,7 @@ GET /api/doctors/filter?specialization=cardiology&name=John&page=2
 
 ## Testing
 
-Run unit and feature tests with:
+Run all unit and feature tests with:
 
 ```bash
 php artisan test
@@ -223,9 +229,9 @@ Contributions are welcome! Please fork the repository, create a feature branch, 
 
 This project is licensed under the MIT License.
 
----
+```
 
 ---
 
-If you want me to generate this as a `.md` file and upload it for you to download, just say so!
+If you’d like me to generate a downloadable `.md` file or convert it to PDF/Word, just say the format you need.
 ```
